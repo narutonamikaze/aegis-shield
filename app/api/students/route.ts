@@ -1,28 +1,42 @@
 // app/api/students/route.ts
 import { NextResponse } from 'next/server';
 
-const students = [
-  { student_id: 'S001', student_name: 'Emma', class: 10, center_id: 'D002' },
-  { student_id: 'S002', student_name: 'Liam', class: 1, center_id: 'D001' },
-  { student_id: 'S003', student_name: 'Aria', class: 8, center_id: 'D001' },
-  { student_id: 'S004', student_name: 'Noah', class: 10, center_id: 'D002' },
-];
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get('student_id');
 
-  const student = students.find((s) => s.student_id === studentId);
-  
-  if (student) {
-    return NextResponse.json(student);
-  } else {
-    return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+  try {
+    const response = await fetch(`http://localhost:5000/api/students/${studentId}`);
+    if (response.ok) {
+      const student = await response.json();
+      return NextResponse.json(student);
+    } else {
+      return NextResponse.json({ error: 'Student not found' }, { status: 404 });
+    }
+  } catch (error) {
+    console.error("Error fetching student data:", error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   const newStudent = await request.json();
-  students.push(newStudent);
-  return NextResponse.json(newStudent, { status: 201 });
+  try {
+    const response = await fetch('http://localhost:5000/api/students', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newStudent),
+    });
+    if (response.ok) {
+      const student = await response.json();
+      return NextResponse.json(student, { status: 201 });
+    } else {
+      return NextResponse.json({ error: 'Failed to register student' }, { status: 400 });
+    }
+  } catch (error) {
+    console.error("Error registering student:", error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }

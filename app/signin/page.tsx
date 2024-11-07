@@ -26,46 +26,76 @@ const SignIn: React.FC = () => {
   const [newStudent, setNewStudent] = useState<StudentDetails>({ student_id: "", student_name: "", class: 0, center_id: "" });
   const [newVolunteer, setNewVolunteer] = useState<VolunteerDetails>({ volunteer_id: "", volunteer_name: "", address: "", center_id: "" });
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (userType === "student") {
-      const storedStudents = JSON.parse(localStorage.getItem("students") || "[]");
-      const student = storedStudents.find((s: StudentDetails) => s.student_id === userId);
-      if (student) {
-        setStudentDetails(student);
-        setVolunteerDetails(null);
-      } else {
-        alert("Student not found.");
-        setStudentDetails(null);
+      try {
+        const response = await fetch(`http://localhost:5000/api/students/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setStudentDetails(data);
+          setVolunteerDetails(null);
+        } else {
+          alert("Student not found.");
+          setStudentDetails(null);
+        }
+      } catch (error) {
+        console.error("Error fetching student data:", error);
       }
     } else if (userType === "volunteer") {
-      const storedVolunteers = JSON.parse(localStorage.getItem("volunteers") || "[]");
-      const volunteer = storedVolunteers.find((v: VolunteerDetails) => v.volunteer_id === userId);
-      if (volunteer) {
-        setVolunteerDetails(volunteer);
-        setStudentDetails(null);
-      } else {
-        alert("Volunteer not found.");
-        setVolunteerDetails(null);
+      try {
+        const response = await fetch(`http://localhost:5000/api/volunteers/${userId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setVolunteerDetails(data);
+          setStudentDetails(null);
+        } else {
+          alert("Volunteer not found.");
+          setVolunteerDetails(null);
+        }
+      } catch (error) {
+        console.error("Error fetching volunteer data:", error);
       }
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (userType === "student") {
-      const storedStudents = JSON.parse(localStorage.getItem("students") || "[]");
-      storedStudents.push(newStudent);
-      localStorage.setItem("students", JSON.stringify(storedStudents));
-      alert("Student registered successfully!");
-      setNewStudent({ student_id: "", student_name: "", class: 0, center_id: "" });
-    } else if (userType === "volunteer") {
-      const storedVolunteers = JSON.parse(localStorage.getItem("volunteers") || "[]");
-      storedVolunteers.push(newVolunteer);
-      localStorage.setItem("volunteers", JSON.stringify(storedVolunteers));
-      alert("Volunteer registered successfully!");
-      setNewVolunteer({ volunteer_id: "", volunteer_name: "", address: "", center_id: "" });
+    try {
+      if (userType === "student") {
+        const response = await fetch('http://localhost:5000/api/students', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newStudent),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          alert("Student registered successfully!");
+          setNewStudent({ student_id: "", student_name: "", class: 0, center_id: "" });
+        } else {
+          alert("Failed to register student.");
+        }
+      } else if (userType === "volunteer") {
+        const response = await fetch('http://localhost:5000/api/volunteers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newVolunteer),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          alert("Volunteer registered successfully!");
+          setNewVolunteer({ volunteer_id: "", volunteer_name: "", address: "", center_id: "" });
+        } else {
+          alert("Failed to register volunteer.");
+        }
+      }
+    } catch (error) {
+      console.error("Error registering user:", error);
     }
   };
 
