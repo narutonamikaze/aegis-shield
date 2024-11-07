@@ -20,3 +20,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Student not found' }, { status: 404 });
   }
 }
+
+export async function POST(request: Request) {
+  const newStudent = await request.json();
+  students.push(newStudent);
+  return NextResponse.json(newStudent, { status: 201 });
+}

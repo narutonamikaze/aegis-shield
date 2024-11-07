@@ -1,10 +1,7 @@
-// app/signin/page.tsx
-
 "use client";
 import React, { useState } from "react";
 import "./signin.css";
 
-// Define the structure of student details
 interface StudentDetails {
   student_id: string;
   student_name: string;
@@ -12,20 +9,12 @@ interface StudentDetails {
   center_id: string;
 }
 
-// Define the structure of volunteer details
 interface VolunteerDetails {
   volunteer_id: string;
   volunteer_name: string;
-  no_of_session_taken: number;
+  address: string;
   center_id: string;
 }
-
-// Sample volunteer data
-const volunteerData: VolunteerDetails[] = [
-  { volunteer_id: "V001", volunteer_name: "John Doe", no_of_session_taken: 10, center_id: "D001" },
-  { volunteer_id: "V002", volunteer_name: "Jane Smith", no_of_session_taken: 12, center_id: "D002" },
-  { volunteer_id: "V003", volunteer_name: "Sam Wilson", no_of_session_taken: 8, center_id: "D003" },
-];
 
 const SignIn: React.FC = () => {
   const [userType, setUserType] = useState("volunteer");
@@ -33,30 +22,29 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState("");
   const [studentDetails, setStudentDetails] = useState<StudentDetails | null>(null);
   const [volunteerDetails, setVolunteerDetails] = useState<VolunteerDetails | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [newStudent, setNewStudent] = useState<StudentDetails>({ student_id: "", student_name: "", class: 0, center_id: "" });
+  const [newVolunteer, setNewVolunteer] = useState<VolunteerDetails>({ volunteer_id: "", volunteer_name: "", address: "", center_id: "" });
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (userType === "student") {
-      try {
-        const response = await fetch(`/api/students?student_id=${userId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setStudentDetails(data); // Show student details in the UI
-          setVolunteerDetails(null); // Clear volunteer details
-        } else {
-          alert("Student not found.");
-          setStudentDetails(null);
-        }
-      } catch (error) {
-        console.error("Error fetching student data:", error);
+      const storedStudents = JSON.parse(localStorage.getItem("students") || "[]");
+      const student = storedStudents.find((s: StudentDetails) => s.student_id === userId);
+      if (student) {
+        setStudentDetails(student);
+        setVolunteerDetails(null);
+      } else {
+        alert("Student not found.");
+        setStudentDetails(null);
       }
     } else if (userType === "volunteer") {
-      // Look up volunteer data
-      const volunteer = volunteerData.find(v => v.volunteer_id === userId);
+      const storedVolunteers = JSON.parse(localStorage.getItem("volunteers") || "[]");
+      const volunteer = storedVolunteers.find((v: VolunteerDetails) => v.volunteer_id === userId);
       if (volunteer) {
-        setVolunteerDetails(volunteer); // Show volunteer details in the UI
-        setStudentDetails(null); // Clear student details
+        setVolunteerDetails(volunteer);
+        setStudentDetails(null);
       } else {
         alert("Volunteer not found.");
         setVolunteerDetails(null);
@@ -64,26 +52,43 @@ const SignIn: React.FC = () => {
     }
   };
 
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (userType === "student") {
+      const storedStudents = JSON.parse(localStorage.getItem("students") || "[]");
+      storedStudents.push(newStudent);
+      localStorage.setItem("students", JSON.stringify(storedStudents));
+      alert("Student registered successfully!");
+      setNewStudent({ student_id: "", student_name: "", class: 0, center_id: "" });
+    } else if (userType === "volunteer") {
+      const storedVolunteers = JSON.parse(localStorage.getItem("volunteers") || "[]");
+      storedVolunteers.push(newVolunteer);
+      localStorage.setItem("volunteers", JSON.stringify(storedVolunteers));
+      alert("Volunteer registered successfully!");
+      setNewVolunteer({ volunteer_id: "", volunteer_name: "", address: "", center_id: "" });
+    }
+  };
+
   return (
-    <div className="wrapper">
-      <div className="form-box">
-        <h2>Sign In</h2>
-        <form onSubmit={handleSignIn}>
-          <div className="input-box">
-            <label htmlFor="userType">User Type</label>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">{isRegistering ? "Register" : "Sign In"}</h2>
+        <form onSubmit={isRegistering ? handleRegister : handleSignIn}>
+          <div className="mb-4">
+            <label htmlFor="userType" className="block text-gray-700 font-bold mb-2">User Type</label>
             <select
               id="userType"
               value={userType}
               onChange={(e) => setUserType(e.target.value)}
               required
-              className="input-field"
+              className="w-full px-3 py-2 border rounded-lg"
             >
               <option value="volunteer">Volunteer</option>
               <option value="student">Student</option>
             </select>
           </div>
-          <div className="input-box">
-            <label htmlFor="userId">User ID</label>
+          <div className="mb-4">
+            <label htmlFor="userId" className="block text-gray-700 font-bold mb-2">User ID</label>
             <input
               type="text"
               id="userId"
@@ -91,11 +96,11 @@ const SignIn: React.FC = () => {
               onChange={(e) => setUserId(e.target.value)}
               placeholder="Enter your User ID"
               required
-              className="input-field"
+              className="w-full px-3 py-2 border rounded-lg"
             />
           </div>
-          <div className="input-box">
-            <label htmlFor="password">Password</label>
+          <div className="mb-6">
+            <label htmlFor="password" className="block text-gray-700 font-bold mb-2">Password</label>
             <input
               type="password"
               id="password"
@@ -103,18 +108,103 @@ const SignIn: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your Password"
               required
-              className="input-field"
+              className="w-full px-3 py-2 border rounded-lg"
             />
           </div>
-          <button type="submit" className="submit">
-            Sign In
+          {isRegistering && userType === "student" && (
+            <>
+              <div className="mb-4">
+                <label htmlFor="studentName" className="block text-gray-700 font-bold mb-2">Student Name</label>
+                <input
+                  type="text"
+                  id="studentName"
+                  value={newStudent.student_name}
+                  onChange={(e) => setNewStudent({ ...newStudent, student_name: e.target.value })}
+                  placeholder="Enter student name"
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="class" className="block text-gray-700 font-bold mb-2">Class</label>
+                <input
+                  type="number"
+                  id="class"
+                  value={newStudent.class}
+                  onChange={(e) => setNewStudent({ ...newStudent, class: parseInt(e.target.value) })}
+                  placeholder="Enter class"
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="centerId" className="block text-gray-700 font-bold mb-2">Center ID</label>
+                <input
+                  type="text"
+                  id="centerId"
+                  value={newStudent.center_id}
+                  onChange={(e) => setNewStudent({ ...newStudent, center_id: e.target.value })}
+                  placeholder="Enter center ID"
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            </>
+          )}
+          {isRegistering && userType === "volunteer" && (
+            <>
+              <div className="mb-4">
+                <label htmlFor="volunteerName" className="block text-gray-700 font-bold mb-2">Volunteer Name</label>
+                <input
+                  type="text"
+                  id="volunteerName"
+                  value={newVolunteer.volunteer_name}
+                  onChange={(e) => setNewVolunteer({ ...newVolunteer, volunteer_name: e.target.value })}
+                  placeholder="Enter volunteer name"
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="address" className="block text-gray-700 font-bold mb-2">Address</label>
+                <input
+                  type="text"
+                  id="address"
+                  value={newVolunteer.address}
+                  onChange={(e) => setNewVolunteer({ ...newVolunteer, address: e.target.value })}
+                  placeholder="Enter address"
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="centerId" className="block text-gray-700 font-bold mb-2">Center ID</label>
+                <input
+                  type="text"
+                  id="centerId"
+                  value={newVolunteer.center_id}
+                  onChange={(e) => setNewVolunteer({ ...newVolunteer, center_id: e.target.value })}
+                  placeholder="Enter center ID"
+                  required
+                  className="w-full px-3 py-2 border rounded-lg"
+                />
+              </div>
+            </>
+          )}
+          <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg font-bold hover:bg-blue-600 transition duration-300">
+            {isRegistering ? "Register" : "Sign In"}
           </button>
         </form>
+        <button
+          onClick={() => setIsRegistering(!isRegistering)}
+          className="w-full mt-4 text-blue-500 hover:underline"
+        >
+          {isRegistering ? "Already have an account? Sign In" : "Don't have an account? Register"}
+        </button>
 
-        {/* Display student details if available */}
         {studentDetails && (
-          <div className="student-details">
-            <h3>Student Details</h3>
+          <div className="mt-6 p-4 bg-gray-50 border rounded-lg">
+            <h3 className="text-lg font-bold mb-2">Student Details</h3>
             <p><strong>ID:</strong> {studentDetails.student_id}</p>
             <p><strong>Name:</strong> {studentDetails.student_name}</p>
             <p><strong>Class:</strong> {studentDetails.class}</p>
@@ -122,13 +212,12 @@ const SignIn: React.FC = () => {
           </div>
         )}
 
-        {/* Display volunteer details if available */}
         {volunteerDetails && (
-          <div className="volunteer-details">
-            <h3>Volunteer Details</h3>
+          <div className="mt-6 p-4 bg-gray-50 border rounded-lg">
+            <h3 className="text-lg font-bold mb-2">Volunteer Details</h3>
             <p><strong>ID:</strong> {volunteerDetails.volunteer_id}</p>
             <p><strong>Name:</strong> {volunteerDetails.volunteer_name}</p>
-            <p><strong>Sessions Taken:</strong> {volunteerDetails.no_of_session_taken}</p>
+            <p><strong>Address:</strong> {volunteerDetails.address}</p>
             <p><strong>Center ID:</strong> {volunteerDetails.center_id}</p>
           </div>
         )}

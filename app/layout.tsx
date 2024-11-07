@@ -31,7 +31,7 @@ export default function RootLayout({
         {/* Navbar Component */}
         <nav className="flex justify-between items-center bg-gray-800 p-6">
           <div className="text-white text-3xl font-bold mx-auto">
-            AEGIS SYSTEMS
+            NGO MANAGEMENT SYSTEMS
           </div>
           <div className="space-x-4">
             <button className="text-white px-4 py-2 border border-gray-500 rounded hover:bg-gray-700">

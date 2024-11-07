@@ -8,7 +8,7 @@ const Login: React.FC = () => {
         <div className="wrapper">
             <nav className="nav">
                 <div className="nav-logo">
-                    <p>AEGIS SYSTEMS</p>
+                    <p>NGO MANAGEMENT SYSTEMS</p>
                 </div>
             </nav>
             <div className="form-box">
