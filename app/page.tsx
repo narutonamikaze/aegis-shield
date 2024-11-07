@@ -16,22 +16,22 @@ export default function Home() {
 
   const ngoCenters: Center[] = [
     {
-      name: "Centre 1",
-      address: "123 Main Street, City A",
+      name: "Inderprastha IP Center",
+      address: "Near Inderprastha Metro Station, Metro Pillar 343",
       contact: "0123456789",
       description: "This center focuses on education and youth empowerment.",
       image: "https://cdn.britannica.com/43/93843-050-A1F1B668/White-House-Washington-DC.jpg",
     },
     {
-      name: "Centre 2",
-      address: "456 Oak Avenue, City B",
+      name: "Rohini 07 Center",
+      address: "Near Ayodhya Chowk Red-light, Naharpur Village",
       contact: "0987654321",
       description: "This center provides healthcare services and free medical camps.",
       image: "https://upload.wikimedia.org/wikipedia/commons/f/fb/Glimpse_of_the_new_Parliament_Building%2C_in_New_Delhi.jpg",
     },
     {
-      name: "Centre 3",
-      address: "789 Pine Road, City C",
+      name: "Dwarka 21 Center",
+      address: "Near Dwarka Sector 21 Metro Station, Metro Pillar",
       contact: "01122334455",
       description: "This center offers vocational training and skill development.",
       image: "https://curioustravelbug.com/wp-content/uploads/2019/01/IMG_0690-1-1024x683.jpg",
